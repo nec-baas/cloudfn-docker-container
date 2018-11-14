@@ -1,0 +1,100 @@
+# 共通Makefile
+# 以下パラメータは必須。各 Makefile で指定すること
+#
+# - IMAGE_NAME : コンテナイメージ名
+# - CONTAINER_NAME : コンテナ名
+# - LOGIC_SERVER_HOST_DIR : ロジックサーバのコードの格納先（ホスト側のパス）
+#
+# 以下パラメータはオプション。
+#
+# - MEMORY_LIMIT : 割り当てるメモリの最大値
+
+# コンテナに割り当てメモリの最大値
+MEMORY_LIMIT ?= 128M
+
+# nodeロジックサーバのコードの格納先（コンテナ側のパス）
+LOGIC_SERVER_DIR = /opt/emitter
+
+# ユーザコードの格納先（ホスト側のパス）
+USER_CODE_HOST_DIR = ~/work/work_docker/user_code
+
+# ユーザコードの格納先（コンテナ側のパス）
+USER_CODE_DIR = /opt/usercode
+
+#作業領域（一時データ格納用）の格納先（コンテナ側のパス）
+TMP_DIR = /tmp
+
+#追加の環境変数
+ENV_HOST_IP = 'HOST_IP=172.17.0.1'
+
+#追加のリソースのリミット
+ULIMIT_NOFILE = 'nofile=1024'
+
+
+###    以下はコンテナ起動時の各種設定    ####
+# メモリ制限の設定
+MEMORY_OPTS = -m $(MEMORY_LIMIT)
+
+# nodeロジックサーバのコード格納先のボリューム設定(Read only)
+LOGIC_SERVER_VOLUME_OPTS = -v $(LOGIC_SERVER_HOST_DIR):$(LOGIC_SERVER_DIR):ro
+
+# ユーザコード格納先のボリューム設定(Read only)
+USER_CODE_VOLUME_OPTS = -v $(USER_CODE_HOST_DIR):$(USER_CODE_DIR):ro
+
+# 作業領域（一時データ格納用）のボリューム設定
+TMP_VOLUME_OPTS = --tmpfs $(TMP_DIR)
+
+# コンテナ名の設定
+CONTAINER_NAME_OPS = --name $(CONTAINER_NAME)
+
+# 環境変数の設定
+ENV_OPTS = --env $(ENV_HOST_IP)
+
+# リソースのリミットの設定
+# 最大のオープンファイル数(ソフトリミット）
+ULIMIT_OPTS = --ulimit $(ULIMIT_NOFILE)
+
+
+###    以下は各コマンドの定義    ####
+all: image
+
+image:
+	docker build -t $(IMAGE_NAME) .
+
+clean:
+
+#コンテナイメージの削除
+rmi:
+	docker rmi $(IMAGE_NAME)
+
+#コンテナ起動とコンソール表示
+bash:
+	docker run -it --rm $(MEMORY_OPTS) \
+		$(LOGIC_SERVER_VOLUME_OPTS) \
+		$(USER_CODE_VOLUME_OPTS) \
+		$(TMP_VOLUME_OPTS) \
+		$(ULIMIT_OPTS) \
+		$(ENV_OPTS) \
+		$(CONTAINER_NAME_OPS) \
+		$(IMAGE_NAME) \
+		/bin/bash
+
+#コンテナの起動
+start:
+	docker run -d   $(MEMORY_OPTS) \
+		$(LOGIC_SERVER_VOLUME_OPTS) \
+		$(USER_CODE_VOLUME_OPTS) \
+		$(TMP_VOLUME_OPTS) \
+		$(ULIMIT_OPTS) \
+		$(ENV_OPTS) \
+		$(CONTAINER_NAME_OPS) \
+		$(IMAGE_NAME)
+
+#コンテナの停止
+stop:
+	docker stop $(CONTAINER_NAME)
+
+#コンテナの削除
+rm:
+	docker rm $(CONTAINER_NAME)
+
