@@ -59,17 +59,17 @@ ULIMIT_OPTS = --ulimit $(ULIMIT_NOFILE)
 all: image
 
 image:
-	docker build -t $(IMAGE_NAME) .
+	docker image build -t $(IMAGE_NAME) .
 
 clean:
 
 #コンテナイメージの削除
 rmi:
-	docker rmi $(IMAGE_NAME)
+	docker image rm $(IMAGE_NAME)
 
 #コンテナ起動とコンソール表示
 bash:
-	docker run -it --rm $(MEMORY_OPTS) \
+	docker container run -it --rm $(MEMORY_OPTS) \
 		$(LOGIC_SERVER_VOLUME_OPTS) \
 		$(USER_CODE_VOLUME_OPTS) \
 		$(TMP_VOLUME_OPTS) \
@@ -81,7 +81,7 @@ bash:
 
 #コンテナの起動
 start:
-	docker run -d   $(MEMORY_OPTS) \
+	docker container run -d $(MEMORY_OPTS) \
 		$(LOGIC_SERVER_VOLUME_OPTS) \
 		$(USER_CODE_VOLUME_OPTS) \
 		$(TMP_VOLUME_OPTS) \
@@ -92,9 +92,9 @@ start:
 
 #コンテナの停止
 stop:
-	docker stop $(CONTAINER_NAME)
+	docker container stop $(CONTAINER_NAME)
 
 #コンテナの削除
 rm:
-	docker rm $(CONTAINER_NAME)
+	docker container rm $(CONTAINER_NAME)
 
