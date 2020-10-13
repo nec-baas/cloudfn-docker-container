@@ -1,3 +1,7 @@
+2020-10-13:
+
+    * Node.js v12/v14 追加
+
 2018-11-13:
 
     * ロジックサーバの repository name の変更（nebula -> necbaas）
